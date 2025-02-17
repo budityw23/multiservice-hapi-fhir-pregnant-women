@@ -1,0 +1,104 @@
+server:
+  port: 8080
+  # Uncomment and set context-path if needed
+  # servlet:
+  #   context-path: /example/path
+
+management:
+  endpoints:
+    enabled-by-default: false
+    web:
+      exposure:
+        include: 'health'
+  endpoint:
+    info:
+      enabled: true
+    metrics:
+      enabled: true
+    health:
+      enabled: true
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include:
+            - livenessState
+            - readinessState
+    prometheus:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+spring:
+  main:
+    allow-circular-references: true
+  flyway:
+    enabled: false
+    baselineOnMigrate: true
+    fail-on-missing-locations: false
+  datasource:
+    url: jdbc:h2:mem:test_mem
+    username: sa
+    password: null
+    driverClassName: org.h2.Driver
+    max-active: 15
+    hikari:
+      maximum-pool-size: 10
+  jpa:
+    properties:
+      hibernate.format_sql: false
+      hibernate.show_sql: false
+      hibernate.dialect: ca.uhn.fhir.jpa.model.dialect.HapiFhirH2Dialect
+    hibernate.search.enabled: false
+
+hapi:
+  fhir:
+    cr:
+      enabled: false
+      caregaps:
+        reporter: "default"
+        section_author: "default"
+    openapi_enabled: true
+    fhir_version: R4
+    ig_runtime_upload_enabled: false
+    # Uncomment to enable ApacheProxyAddressStrategy
+    # use_apache_address_strategy: false
+    # use_apache_address_strategy_https: false
+    # server_address: http://hapi.fhir.org/baseR4
+
+    logical_urls:
+      - http://terminology.hl7.org/*
+      - https://terminology.hl7.org/*
+      - http://snomed.info/*
+      - https://snomed.info/*
+      - http://unitsofmeasure.org/*
+      - https://unitsofmeasure.org/*
+      - http://loinc.org/*
+      - https://loinc.org/*
+    
+    cors:
+      allow_Credentials: true
+      allowed_origin:
+        - '*'
+
+    search-coord-core-pool-size: 20
+    search-coord-max-pool-size: 100
+    search-coord-queue-capacity: 200
+
+    search_prefetch_thresholds: 13,503,2003,-1
+
+    inline_resource_storage_below_size: 4000
+
+tester:
+  home:
+    name: Local Tester
+    server_address: 'http://localhost:8080/fhir'
+    refuse_to_fetch_third_party_urls: false
+    fhir_version: R4
+  global:
+    name: Global Tester
+    server_address: "http://hapi.fhir.org/baseR4"
+    refuse_to_fetch_third_party_urls: false
+    fhir_version: R4

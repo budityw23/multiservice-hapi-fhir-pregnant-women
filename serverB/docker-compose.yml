@@ -1,0 +1,45 @@
+version: "3.7"
+services:
+  fetal-fhir: # Changed from hapi-fhir to fetal-fhir to match BASE_URL
+    image: "hapiproject/hapi:latest"
+    container_name: fetal-fhir
+    ports:
+      - "8082:8080"
+    environment:
+      SPRING_CONFIG_LOCATION: file:///config/application.yaml
+    volumes:
+      - ./config:/config
+    depends_on:
+      - fetal-db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/fhir/metadata"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  fetal-db: # Changed from postgres-db to fetal-db
+    image: postgres:13
+    container_name: fetal-db
+    environment:
+      POSTGRES_DB: hapi
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5434:5432"
+    volumes:
+      - fetal-data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  data-generator:
+    build: ./data-generator
+    container_name: fetal-data-generator
+    depends_on:
+      - fetal-fhir
+
+volumes:
+  fetal-data:
+    name: fetal-data
+
+networks:
+  default:
+    name: fetal-network

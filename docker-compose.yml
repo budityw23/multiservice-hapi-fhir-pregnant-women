@@ -1,0 +1,102 @@
+version: "3.7"
+
+services:
+  # Server A - Maternal Health Monitoring
+  maternal-fhir:
+    extends:
+      file: ./serverA/docker-compose.yml
+      service: maternal-fhir
+    container_name: maternal-fhir
+    ports:
+      - "8081:8080"
+    networks:
+      - maternal-net
+      - fhir-net
+
+  maternal-db:
+    extends:
+      file: ./serverA/docker-compose.yml
+      service: maternal-db
+    container_name: maternal-db
+    ports:
+      - "5433:5432"
+    networks:
+      - maternal-net
+
+  maternal-data-generator:
+    extends:
+      file: ./serverA/docker-compose.yml
+      service: data-generator
+    container_name: maternal-data-generator
+    networks:
+      - maternal-net
+
+  # Server B - Fetal Health Monitoring
+  fetal-fhir:
+    extends:
+      file: ./serverB/docker-compose.yml
+      service: fetal-fhir
+    container_name: fetal-fhir
+    ports:
+      - "8082:8080"
+    networks:
+      - fetal-net
+      - fhir-net
+
+  fetal-db:
+    extends:
+      file: ./serverB/docker-compose.yml
+      service: fetal-db
+    container_name: fetal-db
+    ports:
+      - "5434:5432"
+    networks:
+      - fetal-net
+
+  fetal-data-generator:
+    extends:
+      file: ./serverB/docker-compose.yml
+      service: data-generator
+    container_name: fetal-data-generator
+    networks:
+      - fetal-net
+
+  # Server C - Obstetric Care
+  obstetric-fhir:
+    extends:
+      file: ./serverC/docker-compose.yml
+      service: obstetric-fhir
+    container_name: obstetric-fhir
+    ports:
+      - "8083:8080"
+    networks:
+      - obstetric-net
+      - fhir-net
+
+  obstetric-db:
+    extends:
+      file: ./serverC/docker-compose.yml
+      service: obstetric-db
+    container_name: obstetric-db
+    ports:
+      - "5435:5432"
+    networks:
+      - obstetric-net
+
+  obstetric-data-generator:
+    extends:
+      file: ./serverC/docker-compose.yml
+      service: data-generator
+    container_name: obstetric-data-generator
+    networks:
+      - obstetric-net
+
+networks:
+  maternal-net:
+    name: maternal-net
+  fetal-net:
+    name: fetal-net
+  obstetric-net:
+    name: obstetric-net
+  fhir-net:
+    name: fhir-net
