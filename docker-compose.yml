@@ -91,6 +91,13 @@ services:
     networks:
       - obstetric-net
 
+  search-service:
+    extends:
+      file: ./search-service/docker-compose.yml
+      service: search-service
+    networks:
+      - fhir-net
+
 networks:
   maternal-net:
     name: maternal-net
