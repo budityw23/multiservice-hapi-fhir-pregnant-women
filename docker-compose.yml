@@ -100,3 +100,11 @@ networks:
     name: obstetric-net
   fhir-net:
     name: fhir-net
+
+volumes:
+  maternal-data:
+    name: maternal-data
+  fetal-data:
+    name: fetal-data
+  obstetric-data:
+    name: obstetric-data
