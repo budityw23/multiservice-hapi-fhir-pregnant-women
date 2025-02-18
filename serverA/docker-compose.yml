@@ -1,23 +1,33 @@
-version: "3.7"
 services:
-  maternal-fhir: # Changed from hapi-fhir to maternal-fhir to match BASE_URL
-    image: "hapiproject/hapi:latest"
+  interceptors:
+    build:
+      context: ./interceptors
+      dockerfile: Dockerfile
+    volumes:
+      - ./interceptors/target:/build/target
+
+  maternal-fhir:
+    build: 
+      context: .
+      dockerfile: Dockerfile
     container_name: maternal-fhir
     ports:
       - "8081:8080"
     environment:
-      SPRING_CONFIG_LOCATION: file:///config/application.yaml
+      JAVA_OPTS: "-Djava.class.path=/app/extra-libs/*"
     volumes:
       - ./config:/config
+      - ./interceptors/target:/app/extra-libs:ro
     depends_on:
+      - interceptors
       - maternal-db
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/fhir/metadata"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/fhir/metadata || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
 
-  maternal-db: # Changed from postgres-db to maternal-db
+  maternal-db:
     image: postgres:13
     container_name: maternal-db
     environment:

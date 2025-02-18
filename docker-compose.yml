@@ -1,14 +1,26 @@
 version: "3.7"
 
 services:
+  interceptors:
+    build:
+      context: ./serverA/interceptors
+      dockerfile: Dockerfile
+    volumes:
+      - interceptor-build:/build/target
+
   # Server A - Maternal Health Monitoring
   maternal-fhir:
     extends:
       file: ./serverA/docker-compose.yml
       service: maternal-fhir
+    volumes:
+      - ./serverA/config:/config
+      - interceptor-build:/app/extra-libs
     container_name: maternal-fhir
     ports:
       - "8081:8080"
+    depends_on:
+      - interceptors
     networks:
       - maternal-net
       - fhir-net
@@ -109,6 +121,7 @@ networks:
     name: fhir-net
 
 volumes:
+  interceptor-build:
   maternal-data:
     name: maternal-data
   fetal-data:

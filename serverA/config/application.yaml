@@ -79,6 +79,9 @@ spring:
 #      hibernate.search.backend.analysis.configurer: ca.uhn.fhir.jpa.search.HapiHSearchAnalysisConfigurers$HapiElasticAnalysisConfigurer
 hapi:
   fhir:
+    custom-bean-packages: com.example
+    custom-interceptor-classes: com.example.FederatedSearchInterceptor
+    custom_jars_path: /app/extra-libs
     ### This flag when enabled to true, will avail evaluate measure operations from CR Module.
     ### Flag is false by default, can be passed as command line argument to override.
     cr:
