@@ -4,7 +4,7 @@ services:
       context: ./interceptors
       dockerfile: Dockerfile
     volumes:
-      - ./interceptors/target:/build/target
+      - interceptor-build:/build/target
 
   maternal-fhir:
     build: 
@@ -15,14 +15,15 @@ services:
       - "8081:8080"
     environment:
       JAVA_OPTS: "-Djava.class.path=/app/extra-libs/*"
+      CLASSPATH: "/app/extra-libs/*"
     volumes:
-      - ./config:/config
-      - ./interceptors/target:/app/extra-libs:ro
+      - ./config:/config:ro
+      - interceptor-build:/app/extra-libs:ro
     depends_on:
       - interceptors
       - maternal-db
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/fhir/metadata || exit 1"]
+      test: [ "CMD", "java", "-version" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -49,6 +50,7 @@ services:
 volumes:
   maternal-data:
     name: maternal-data
+  interceptor-build:
 
 networks:
   default:

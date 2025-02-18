@@ -34,6 +34,7 @@ management:
         enabled: true
 spring:
   main:
+    allow-bean-definition-overriding: true
     allow-circular-references: true
   flyway:
     enabled: false
@@ -52,8 +53,8 @@ spring:
       maximum-pool-size: 10
   jpa:
     properties:
-      hibernate.format_sql: false
-      hibernate.show_sql: false
+      hibernate.format_sql: true
+      hibernate.show_sql: true
 
       #Hibernate dialect is automatically detected except Postgres and H2.
       #If using H2, then supply the value of ca.uhn.fhir.jpa.model.dialect.HapiFhirH2Dialect
@@ -77,6 +78,13 @@ spring:
   ### elastic parameters ===> see also elasticsearch section below <===
 #      hibernate.search.backend.type: elasticsearch
 #      hibernate.search.backend.analysis.configurer: ca.uhn.fhir.jpa.search.HapiHSearchAnalysisConfigurers$HapiElasticAnalysisConfigurer
+logging:
+  level:
+    root: INFO
+    com.example: DEBUG
+    ca.uhn.fhir: DEBUG
+    org.springframework: INFO
+
 hapi:
   fhir:
     custom-bean-packages: com.example

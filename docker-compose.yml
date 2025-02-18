@@ -7,6 +7,8 @@ services:
       dockerfile: Dockerfile
     volumes:
       - interceptor-build:/build/target
+    networks:
+      - fhir-net
 
   # Server A - Maternal Health Monitoring
   maternal-fhir:
@@ -21,6 +23,8 @@ services:
       - "8081:8080"
     depends_on:
       - interceptors
+      - fetal-fhir
+      - obstetric-fhir
     networks:
       - maternal-net
       - fhir-net
@@ -54,6 +58,11 @@ services:
     networks:
       - fetal-net
       - fhir-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/fhir/metadata"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   fetal-db:
     extends:
@@ -84,6 +93,11 @@ services:
     networks:
       - obstetric-net
       - fhir-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/fhir/metadata"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   obstetric-db:
     extends:
@@ -102,13 +116,6 @@ services:
     container_name: obstetric-data-generator
     networks:
       - obstetric-net
-
-  search-service:
-    extends:
-      file: ./search-service/docker-compose.yml
-      service: search-service
-    networks:
-      - fhir-net
 
 networks:
   maternal-net:
