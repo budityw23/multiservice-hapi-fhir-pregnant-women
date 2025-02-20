@@ -1,0 +1,27 @@
+{
+  "name": "FHIR Search Channel",
+  "description": "Channel for FHIR search across multiple servers",
+  "urlPattern": "^/fhir-search/.*$",
+  "methods": ["GET"],
+  "type": "http",
+  "allow": ["admin"],
+  "routes": [
+    {
+      "name": "FHIR Search Route",
+      "host": "fhir-search-mediator",
+      "port": 3000,
+      "path": "/fhir-search",
+      "primary": true,
+      "type": "http",
+      "secured": false
+    }
+  ],
+  "authType": "private",
+  "matchContentTypes": ["application/json"],
+  "properties": [],
+  "alerts": [],
+  "status": "enabled",
+  "rewriteUrls": false,
+  "addAutoRewriteRules": true,
+  "rewriteUrlsConfig": []
+}

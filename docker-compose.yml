@@ -1,6 +1,87 @@
 version: "3.7"
 
 services:
+  # OpenHIM and Mediator Services
+  fhir-search-mediator:
+    build: ./openhim-mediator-search
+    container_name: fhir-search-mediator
+    ports:
+      - "3000:3000"
+    networks:
+      - openhim-net
+      - fhir-net
+    depends_on:
+      - openhim-core
+      - maternal-fhir
+      - fetal-fhir
+      - obstetric-fhir
+    restart: unless-stopped
+
+  mongo-db:
+    container_name: mongo-db
+    image: mongo:4.4
+    networks:
+      - openhim-net
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo localhost:27017/test --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  openhim-core:
+    container_name: openhim-core
+    image: jembi/openhim-core:latest
+    environment:
+      - mongo_url=mongodb://mongo-db/openhim
+      - mongo_atnaUrl=mongodb://mongo-db/openhim
+      - NODE_ENV=development
+      - cors_origin=["http://localhost:9000"]
+      - authentication_type=local
+      - api_protocol=http
+      - api_hostname=localhost
+      - api_port=8080
+      - "logger_level=info"
+      - "router_timeout=5000"
+      - "rerun_max_retries=3"
+      - "bodyCull_size=2000"
+      - "transaction_auto_retry_enabled=true"
+      - "auditing_enabled=true"
+      - "auditing_max_events_stored=10000"
+      - "statsd_enabled=false"
+    ports:
+      - "8080:8080"
+      - "5000:5000"
+      - "5001:5001"
+    depends_on:
+      - mongo-db
+    networks:
+      - openhim-net
+      - fhir-net
+    restart: unless-stopped
+
+  openhim-console:
+    container_name: openhim-console
+    image: jembi/openhim-console:latest
+    volumes:
+      - ./openhim-console/config:/usr/share/nginx/html/config:ro
+    environment:
+      - OPENHIM_CORE_HOST=localhost
+      - OPENHIM_CORE_PORT=8080
+      - OPENHIM_CORE_PROTOCOL=http
+      - NODE_ENV=development
+    ports:
+      - "9000:80"
+    networks:
+      - openhim-net
+    depends_on:
+      - openhim-core
+    restart: unless-stopped
+
+  # Rest of your services remain the same...
   # Server A - Maternal Health Monitoring
   maternal-fhir:
     extends:
@@ -12,6 +93,7 @@ services:
     networks:
       - maternal-net
       - fhir-net
+      - openhim-net
 
   maternal-db:
     extends:
@@ -42,6 +124,7 @@ services:
     networks:
       - fetal-net
       - fhir-net
+      - openhim-net
 
   fetal-db:
     extends:
@@ -72,6 +155,7 @@ services:
     networks:
       - obstetric-net
       - fhir-net
+      - openhim-net
 
   obstetric-db:
     extends:
@@ -91,13 +175,6 @@ services:
     networks:
       - obstetric-net
 
-  search-service:
-    extends:
-      file: ./search-service/docker-compose.yml
-      service: search-service
-    networks:
-      - fhir-net
-
 networks:
   maternal-net:
     name: maternal-net
@@ -107,6 +184,8 @@ networks:
     name: obstetric-net
   fhir-net:
     name: fhir-net
+  openhim-net:
+    name: openhim-net
 
 volumes:
   maternal-data:
@@ -115,3 +194,5 @@ volumes:
     name: fetal-data
   obstetric-data:
     name: obstetric-data
+  mongo-data:
+    name: mongo-data
