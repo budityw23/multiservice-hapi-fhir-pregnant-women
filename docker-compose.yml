@@ -36,32 +36,58 @@ services:
     container_name: openhim-core
     image: jembi/openhim-core:latest
     environment:
+      - NODE_ENV=production
       - mongo_url=mongodb://mongo-db/openhim
       - mongo_atnaUrl=mongodb://mongo-db/openhim
-      - NODE_ENV=development
-      - cors_origin=["http://localhost:9000"]
-      - authentication_type=local
+      - router_timeout=300000
       - api_protocol=http
       - api_hostname=localhost
       - api_port=8080
-      - "logger_level=info"
-      - "router_timeout=5000"
-      - "rerun_max_retries=3"
-      - "bodyCull_size=2000"
-      - "transaction_auto_retry_enabled=true"
-      - "auditing_enabled=true"
-      - "auditing_max_events_stored=10000"
-      - "statsd_enabled=false"
+      - testing=false
+      - trusted_keys_dir=/etc/openhim/tls
+      - log_level=info
+      - log_outputs='["winston-rest-2.0"]'
+      - authentication_type=local
+      - tcpAdapter_httpReceiver_port=7786
+      - bodyCulling_enabled=true
+      - statsd_enabled=false
+      - cors_allowedHeaders='["Content-Type", "Authorization"]'
+      - cors_allowedDomains='["http://localhost:9000"]'
+      - cors_allowedCredentials=true
+      - cors_enabled=true
+      - tlsClientLookup_type=strict
+      - agenda_enable=true
+      - authentication_enableMutualTLSAuthentication=false
+      - authentication_enableBasicAuthentication=true
+      - api_enabled=true
+      - ssl_enabled=false
+      - ssl_key=false
+      - ssl_cert=false
+      - cookie_secure=false
+      - cookie_maxAge=86400000
+      - sessionKey=your-secret-key
+      - proxy=true
+      - trustProxy=true
+      - cookie_sameSite=lax
+      - cookie_httpOnly=false
+      - cookie_domain=localhost
+      - cookie_path=/
     ports:
       - "8080:8080"
       - "5000:5000"
       - "5001:5001"
     depends_on:
-      - mongo-db
+      mongo-db:
+        condition: service_healthy
     networks:
       - openhim-net
       - fhir-net
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/heartbeat"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   openhim-console:
     container_name: openhim-console
