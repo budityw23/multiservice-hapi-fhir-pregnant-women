@@ -1,4 +1,3 @@
-version: "3.7"
 services:
   maternal-fhir: # Changed from hapi-fhir to maternal-fhir to match BASE_URL
     image: "hapiproject/hapi:latest"
@@ -16,6 +15,8 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+    networks:
+      - maternal-network
 
   maternal-db: # Changed from postgres-db to maternal-db
     image: postgres:13
@@ -35,11 +36,62 @@ services:
     container_name: maternal-data-generator
     depends_on:
       - maternal-fhir
+    networks:
+      - maternal-network
+
+  # Add OpenHIM Core
+  openhim-core:
+    image: jembi/openhim-core:latest
+    container_name: openhim-core
+    environment:
+      - mongo_url=mongodb://openhim-mongo/openhim
+      - mongo_atnaUrl=mongodb://openhim-mongo/openhim
+      - NODE_ENV=development
+      - mongo_host=openhim-mongo
+    ports:
+      - "8080:8080"  # HTTP API port
+      - "5000:5000"  # TCP/TLS port for ATNA audit events
+      - "5001:5001"  # API TCP port
+    depends_on:
+      - openhim-mongo
+    networks:
+      - maternal-network
+
+  # OpenHIM Console (Web Interface)
+  openhim-console:
+    image: jembi/openhim-console:latest
+    container_name: openhim-console
+    ports:
+      - "9000:80"
+    depends_on:
+      - openhim-core
+    networks:
+      - maternal-network
+
+  # MongoDB for OpenHIM
+  openhim-mongo:
+    image: mongo:4.4
+    container_name: openhim-mongo
+    volumes:
+      - openhim-data:/data/db
+    networks:
+      - maternal-network
+
+  fhir-mediator:
+    build: ./mediators/fhir-mediator
+    container_name: fhir-mediator
+    depends_on:
+      - openhim-core
+      - maternal-fhir
+    networks:
+      - maternal-network
 
 volumes:
   maternal-data:
     name: maternal-data
+  openhim-data:
+    name: openhim-data
 
 networks:
-  default:
+  maternal-network:
     name: maternal-network

@@ -1,0 +1,10 @@
+{
+  "name": "fhir-mediator",
+  "version": "1.0.0",
+  "description": "OpenHIM mediator for FHIR server",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.17.1",
+    "axios": "^0.24.0"
+  }
+} 
