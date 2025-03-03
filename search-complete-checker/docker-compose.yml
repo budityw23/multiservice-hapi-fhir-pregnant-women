@@ -1,0 +1,21 @@
+version: "3.7"
+
+services:
+  completeness-checker:
+    build: .
+    container_name: fhir-completeness-checker
+    ports:
+      - "8002:8002"
+    environment:
+      FLASK_APP: app.py
+      FLASK_ENV: development
+    volumes:
+      - ./src:/app
+    networks:
+      - fhir-net
+    depends_on:
+      - checklist-db
+
+networks:
+  fhir-net:
+    external: true 

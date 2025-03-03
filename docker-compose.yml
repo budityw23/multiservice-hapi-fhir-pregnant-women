@@ -98,6 +98,27 @@ services:
     networks:
       - fhir-net
 
+  checklist-service:
+    extends:
+      file: ./module-checker/docker-compose.yml
+      service: checklist-service
+    networks:
+      - fhir-net
+
+  checklist-db:
+    extends:
+      file: ./module-checker/docker-compose.yml
+      service: checklist-db
+    networks:
+      - fhir-net
+
+  completeness-checker:
+    extends:
+      file: ./search-complete-checker/docker-compose.yml
+      service: completeness-checker
+    networks:
+      - fhir-net
+
 networks:
   maternal-net:
     name: maternal-net
@@ -111,7 +132,15 @@ networks:
 volumes:
   maternal-data:
     name: maternal-data
+  maternal-fhir-data:
+    name: maternal-fhir-data
   fetal-data:
     name: fetal-data
+  fetal-fhir-data:
+    name: fetal-fhir-data
   obstetric-data:
     name: obstetric-data
+  obstetric-fhir-data:
+    name: obstetric-fhir-data
+  checklist-data:
+    name: checklist-data

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1,
+        h2 {
+            color: #2c3e50;
+        }
+
+        .module-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .module-description {
+            font-size: 1.2em;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        .checklist {
+            margin-top: 5px; 
+            padding-left: 20px;
+        }
+
+        .checklist li {
+            margin: 8px 0; /* Reduce space between checklist items */
+            font-size: 1.1em;
+        }
+
+        .required {
+            color: red;
+            font-weight: bold;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        a:hover {
+            background-color: #2980b9;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Module Details</h1>
+
+        <p class="module-name">Module Name: {{ module.name }}</p>
+        <p class="module-description">Module Description: {{ module.description }}</p>
+
+        <p><strong>Checklist Items: </strong></p>
+        <ul class="checklist">
+            {% for item in module.items %}
+            <li>
+                {{ item.display }}(Code: {{ item.code }})
+                {% if item.required %}
+                <span class="required">[Required]</span>
+                {% endif %}
+            </li>
+            {% else %}
+            <li>No items available.</li>
+            {% endfor %}
+        </ul>
+
+        <a href="{{ url_for('index') }}">Back to Modules</a>
+    </div>
+</body>
+
+</html>

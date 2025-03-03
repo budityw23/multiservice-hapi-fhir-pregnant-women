@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Search Patient Data</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('check_completeness') }}">
+                    <div class="mb-3">
+                        <label for="patient_identifier" class="form-label">Patient Identifier (NIK)</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="patient_identifier" 
+                               name="patient_identifier" 
+                               placeholder="e.g., 3212121007331111"
+                               required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="encounter_id" class="form-label">Encounter Number (Optional)</label>
+                        <input type="text" class="form-control" id="encounter_id" name="encounter_id">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="module_id" class="form-label">Module</label>
+                        <select class="form-select" id="module_id" name="module_id" required>
+                            <option value="">Select a module...</option>
+                            {% for module in modules %}
+                            <option value="{{ module.id }}">{{ module.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary" formaction="{{ url_for('check_completeness') }}">
+                            Check Completeness
+                        </button>
+                        <button type="submit" class="btn btn-success" formaction="{{ url_for('sync_data') }}">
+                            Check & Sync Data
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
