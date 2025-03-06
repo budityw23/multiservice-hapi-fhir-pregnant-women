@@ -3,8 +3,12 @@ from flask_sqlalchemy import SQLAlchemy
 import requests
 from datetime import datetime
 import concurrent.futures
+import logging
 
 app = Flask(__name__)
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 # Database configuration for module-checker connection
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://admin:admin@checklist-db:5432/checklist'
@@ -88,17 +92,20 @@ def post_observation_to_serverA(observation, patient_identifier, encounter_id=No
         # First get or create patient in serverA
         patient_id = get_patient_id(FHIR_SERVERS['serverA'], patient_identifier)
         if not patient_id:
-            print(f"Patient {patient_identifier} not found in serverA")
+            logging.error(f"Patient {patient_identifier} not found in serverA")
             return False
 
         # Prepare the observation for posting
         new_observation = observation['resource'].copy()
         new_observation.pop('id', None)  # Remove existing ID
         new_observation['subject'] = {'reference': f'Patient/{patient_id}'}
+        new_observation.pop('performer', None)  # Remove performer if it exists
         
         if encounter_id:
             new_observation['encounter'] = {'reference': f'Encounter/{encounter_id}'}
-        
+
+        logging.info(f"Posting observation to serverA: {new_observation}")
+
         # Post the observation to serverA
         response = requests.post(
             f"{FHIR_SERVERS['serverA']}/Observation",
@@ -106,9 +113,12 @@ def post_observation_to_serverA(observation, patient_identifier, encounter_id=No
             headers={'Content-Type': 'application/fhir+json'}
         )
         
+        if response.status_code not in [200, 201]:
+            logging.error(f"Failed to post observation to serverA: {response.status_code} - {response.text}")
+        
         return response.status_code in [200, 201]
     except Exception as e:
-        print(f"Error posting observation to serverA: {str(e)}")
+        logging.error(f"Error posting observation to serverA: {str(e)}")
         return False
 
 @app.route('/')
