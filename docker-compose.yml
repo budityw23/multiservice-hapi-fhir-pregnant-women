@@ -1,6 +1,62 @@
 version: "3.7"
 
 services:
+  # OpenHIM Core
+  openhim-core:
+    image: jembi/openhim-core:latest
+    container_name: openhim-core
+    environment:
+      - mongo_url=mongodb://openhim-mongo/openhim
+      - mongo_atnaUrl=mongodb://openhim-mongo/openhim
+      - NODE_ENV=development
+      - mongo_host=openhim-mongo
+    ports:
+      - "8080:8080"  # API HTTP
+      - "5000:5000"  # TCP/TLS
+      - "5001:5001"  # API TCP
+    networks:
+      - maternal-net
+      - fetal-net
+      - obstetric-net
+    depends_on:
+      - openhim-mongo
+
+  # OpenHIM Console
+  openhim-console:
+    image: jembi/openhim-console:latest
+    container_name: openhim-console
+    ports:
+      - "9000:80"
+    depends_on:
+      - openhim-core
+    networks:
+      - maternal-net
+      - fetal-net
+      - obstetric-net
+
+  # MongoDB for OpenHIM
+  openhim-mongo:
+    image: mongo:4.4
+    container_name: openhim-mongo
+    volumes:
+      - openhim-data:/data/db
+    networks:
+      - maternal-net
+
+  # FHIR Router Mediator
+  fhir-router:
+    build: ./openhim/mediators/fhir-router
+    container_name: fhir-router
+    networks:
+      - maternal-net
+      - fetal-net
+      - obstetric-net
+    depends_on:
+      - openhim-core
+      - maternal-fhir
+      - fetal-fhir
+      - obstetric-fhir
+
   # Server A - Maternal Health Monitoring
   maternal-fhir:
     extends:
@@ -88,14 +144,6 @@ services:
     networks:
       - obstetric-net
 
-networks:
-  maternal-net:
-    name: maternal-net
-  fetal-net:
-    name: fetal-net
-  obstetric-net:
-    name: obstetric-net
-
 volumes:
   maternal-data:
     name: maternal-data
@@ -103,3 +151,13 @@ volumes:
     name: fetal-data
   obstetric-data:
     name: obstetric-data
+  openhim-data:
+    name: openhim-data
+
+networks:
+  maternal-net:
+    name: maternal-net
+  fetal-net:
+    name: fetal-net
+  obstetric-net:
+    name: obstetric-net

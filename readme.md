@@ -1,6 +1,6 @@
 # Distributed HAPI FHIR Prenatal Care System
 
-This project implements a distributed FHIR-based healthcare system specifically designed for comprehensive prenatal care management. The system is divided into three specialized FHIR servers, each handling specific aspects of prenatal care.
+This project implements a distributed FHIR-based healthcare system specifically designed for comprehensive prenatal care management. The system is divided into three specialized FHIR servers, each handling specific aspects of prenatal care, with an OpenHIM integration layer for cross-server communication.
 
 ## System Architecture
 
@@ -12,6 +12,7 @@ This project implements a distributed FHIR-based healthcare system specifically 
    - Tracks laboratory results
    - Handles medication management
    - Port: 8081 (FHIR), 5433 (PostgreSQL)
+   - Network: maternal-net
 
 2. **Server B: Fetal Health Monitoring**
 
@@ -19,12 +20,21 @@ This project implements a distributed FHIR-based healthcare system specifically 
    - Tracks fetal heart rate
    - Handles ultrasound reports
    - Port: 8082 (FHIR), 5434 (PostgreSQL)
+   - Network: fetal-net
 
 3. **Server C: Obstetric Care Planning**
    - Manages delivery planning
    - Tracks labor progression
    - Handles complications monitoring
    - Port: 8083 (FHIR), 5435 (PostgreSQL)
+   - Network: obstetric-net
+
+### Integration Layer
+
+- **OpenHIM**: Provides interoperability between the three FHIR servers
+  - Core: Port 8080 (API HTTP), 5000 (TCP/TLS), 5001 (API TCP)
+  - Console: Port 9000
+  - FHIR Router Mediator: Handles routing between servers
 
 ### Technology Stack
 
@@ -32,6 +42,7 @@ This project implements a distributed FHIR-based healthcare system specifically 
 - PostgreSQL Databases
 - Docker and Docker Compose
 - Python-based Data Generators
+- OpenHIM for interoperability
 
 ## Project Structure
 
