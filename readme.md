@@ -56,6 +56,19 @@ project-root/
 │   ├── postgres/
 │   ├── data-generator/
 │   └── README.md
+├── module-checker/             # Clinical Module Checklist Service
+│   ├── docker-compose.yml
+│   ├── src/
+│   ├── db/
+│   └── Dockerfile
+├── search-service/             # Cross-Server Search Service
+│   ├── docker-compose.yml
+│   ├── src/
+│   └── Dockerfile
+├── search-complete-checker/    # Completeness Verification Service
+│   ├── docker-compose.yml
+│   ├── src/
+│   └── Dockerfile
 └── README.md                   # This file
 ```
 
@@ -91,6 +104,119 @@ docker-compose up serverC  # For obstetric care
    - Maternal Health: http://localhost:8081/fhir
    - Fetal Health: http://localhost:8082/fhir
    - Obstetric Care: http://localhost:8083/fhir
+
+## Completeness Checking Services
+
+The system includes three specialized services that work together to ensure comprehensive data collection across the distributed FHIR servers:
+
+### Module Checker
+
+The Module Checker service maintains standardized checklists of required clinical observations for different types of prenatal care visits.
+
+**Service Details:**
+- Port: 8001
+- Container: fhir-checklist-service
+- Database: checklist-db
+
+**Features:**
+- Create and manage care modules (e.g., Basic ANC Vitals, Pregnancy Assessment)
+- Define required and optional observations within each module
+- Assign standard LOINC and SNOMED codes to checklist items
+- Track module versions and update history
+
+**How to Access:**
+- Web UI: http://localhost:8001/
+- API: http://localhost:8001/api/modules
+
+**Usage:**
+1. Navigate to the Module Checker web interface
+2. Create a new module using the "New Module" button
+3. Add checklist items with their corresponding codes
+4. Mark critical items as "required"
+
+### Search Service
+
+The Search Service provides a unified search capability across all distributed FHIR servers, allowing queries to find resources regardless of which server hosts them.
+
+**Service Details:**
+- Port: 8000
+- Container: fhir-search-service
+
+**Features:**
+- Unified search endpoint spanning all FHIR servers
+- Server priority configuration for deterministic results
+- Result metadata showing source server
+- Support for standard FHIR search parameters
+
+**How to Access:**
+- API: http://localhost:8000/fhir/{resourceType}?{searchParameters}
+
+**Example Queries:**
+```
+# Find a patient across all servers
+http://localhost:8000/fhir/Patient?identifier=3212121009875432
+
+# Find observations for a specific code
+http://localhost:8000/fhir/Observation?code=85354-9
+
+# Find encounters for a specific date
+http://localhost:8000/fhir/Encounter?date=2025-02-15
+```
+
+### Completeness Checker
+
+The Completeness Checker verifies that all required observations for a specific module are present for a patient encounter. If data is missing from the primary server, it can locate and synchronize data from other servers.
+
+**Service Details:**
+- Port: 8002
+- Container: fhir-completeness-checker
+
+**Features:**
+- Verification of data completeness against defined modules
+- Cross-server data discovery
+- Automated data synchronization
+- Detailed completeness reports with sync status
+
+**How to Access:**
+- Web UI: http://localhost:8002/
+
+**Usage:**
+1. Navigate to the Completeness Checker web interface
+2. Enter patient identifier (e.g., NIK number)
+3. Optionally, enter an encounter number
+4. Select the appropriate module checklist
+5. Choose either:
+   - "Check Completeness" - to only check for missing data
+   - "Check & Sync Data" - to automatically find and sync missing data
+
+**Example Workflow:**
+1. Clinician opens the completeness checker during a patient visit
+2. System identifies missing blood pressure measurement
+3. System finds the blood pressure recorded in another server
+4. System synchronizes the data to the primary server
+5. Clinician sees a complete clinical picture without manual searching
+
+## Running the Services
+
+To start all three services together:
+
+```bash
+# From the project root directory
+docker-compose up search-service completeness-checker checklist-service
+```
+
+To start individual services:
+
+```bash
+# Start just the Module Checker
+docker-compose up checklist-service
+
+# Start just the Search Service
+docker-compose up search-service
+
+# Start just the Completeness Checker
+docker-compose up completeness-checker
+```
 
 ## Server Communication
 
@@ -161,6 +287,7 @@ docker network ls
 docker network inspect maternal-net
 docker network inspect fetal-net
 docker network inspect obstetric-net
+docker network inspect fhir-net
 ```
 
 2. Database Issues
@@ -170,6 +297,7 @@ docker network inspect obstetric-net
 docker-compose logs maternal-db
 docker-compose logs fetal-db
 docker-compose logs obstetric-db
+docker-compose logs checklist-db
 ```
 
 3. Server Issues
@@ -179,6 +307,35 @@ docker-compose logs obstetric-db
 docker-compose logs maternal-fhir
 docker-compose logs fetal-fhir
 docker-compose logs obstetric-fhir
+```
+
+4. Module Checker Issues
+```bash
+# Check database connection
+docker-compose logs checklist-db
+
+# Check service logs
+docker-compose logs checklist-service
+```
+
+5. Search Service Issues
+```bash
+# Check connectivity to FHIR servers
+docker-compose logs search-service | grep "connection"
+
+# Test individual server connectivity
+curl http://localhost:8081/fhir/metadata
+curl http://localhost:8082/fhir/metadata
+curl http://localhost:8083/fhir/metadata
+```
+
+6. Completeness Checker Issues
+```bash
+# Check logs for synchronization errors
+docker-compose logs completeness-checker
+
+# Verify module checker database access
+docker-compose logs completeness-checker | grep "database"
 ```
 
 ## Production Deployment
@@ -202,6 +359,15 @@ For production environments:
    - Implement centralized logging
    - Set up performance monitoring
    - Configure alerts for system issues
+
+## Implementation Notes
+
+- The completeness checker requires each server to use consistent patient identifiers
+- Network connectivity between all services must be maintained
+- For production deployment, implement proper authentication between services
+- Synchronization preserves data provenance by tracking the source server
+
+This enhancement to the distributed FHIR system ensures that clinicians always have access to complete patient information, regardless of which specialized system originally captured the data.
 
 ## Contributing
 
