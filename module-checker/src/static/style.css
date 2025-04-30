@@ -1,0 +1,20 @@
+.table th {
+    background-color: #f8f9fa;
+}
+
+.form-label {
+    font-weight: 500;
+}
+
+.modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.btn-danger {
+    padding: 0.25rem 0.5rem;
+}
+
+.table td {
+    vertical-align: middle;
+} 

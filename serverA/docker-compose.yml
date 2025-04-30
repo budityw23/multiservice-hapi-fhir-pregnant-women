@@ -9,6 +9,7 @@ services:
       SPRING_CONFIG_LOCATION: file:///config/application.yaml
     volumes:
       - ./config:/config
+      - maternal-fhir-data:/data/hapi
     depends_on:
       - maternal-db
     healthcheck:
@@ -39,6 +40,8 @@ services:
 volumes:
   maternal-data:
     name: maternal-data
+  maternal-fhir-data:
+    name: maternal-fhir-data
 
 networks:
   default:

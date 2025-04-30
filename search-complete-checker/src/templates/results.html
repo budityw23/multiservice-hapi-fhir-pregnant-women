@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-4">
+    <h2>Completeness Check Results</h2>
+    <p>
+        <strong>Patient Identifier:</strong> {{ patient_identifier }}<br>
+        {% if encounter_id %}
+        <strong>Encounter:</strong> {{ encounter_id }}<br>
+        {% endif %}
+        <strong>Module:</strong> {{ module.name }}
+    </p>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Display Name</th>
+                <th>Required</th>
+                <th>Status</th>
+                <th>Value</th>
+                <th>Source</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in results %}
+            <tr class="{{ 'table-danger' if item.required and not item.found else 'table-success' if item.found else '' }}">
+                <td>{{ item.code }}</td>
+                <td>{{ item.display }}</td>
+                <td>{{ 'Yes' if item.required else 'No' }}</td>
+                <td>
+                    {% if item.found %}
+                    <span class="badge bg-success">Found</span>
+                    {% else %}
+                    <span class="badge bg-danger">Missing</span>
+                    {% endif %}
+                </td>
+                <td>{{ item.value if item.found else '-' }}</td>
+                <td>{{ item.source if item.found else '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="mt-4">
+    <a href="{{ url_for('index') }}" class="btn btn-primary">New Search</a>
+</div>
+{% endblock %} 

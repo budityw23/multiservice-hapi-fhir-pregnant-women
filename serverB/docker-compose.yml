@@ -9,6 +9,7 @@ services:
       SPRING_CONFIG_LOCATION: file:///config/application.yaml
     volumes:
       - ./config:/config
+      - fetal-fhir-data:/data/hapi
     depends_on:
       - fetal-db
     healthcheck:
@@ -39,6 +40,8 @@ services:
 volumes:
   fetal-data:
     name: fetal-data
+  fetal-fhir-data:
+    name: fetal-fhir-data
 
 networks:
   default:

@@ -9,6 +9,7 @@ services:
       SPRING_CONFIG_LOCATION: file:///config/application.yaml
     volumes:
       - ./config:/config
+      - obstetric-fhir-data:/data/hapi
     depends_on:
       - obstetric-db
     healthcheck:
@@ -39,6 +40,8 @@ services:
 volumes:
   obstetric-data:
     name: obstetric-data
+  obstetric-fhir-data:
+    name: obstetric-fhir-data
 
 networks:
   default:

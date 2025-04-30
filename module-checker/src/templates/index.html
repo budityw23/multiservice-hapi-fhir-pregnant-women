@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1>Modules</h1>
+    </div>
+    <div class="col text-end">
+        <a href="{{ url_for('new_module') }}" class="btn btn-primary">New Module</a>
+    </div>
+</div>
+
+<div class="row">
+    {% for module in modules %}
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ module.name }}</h5>
+                <p class="card-text">{{ module.description }}</p>
+                <a href="{{ url_for('view_module', module_id=module.id) }}" class="btn btn-primary">View Checklist</a>
+                <a href="{{ url_for('edit_module', module_id=module.id) }}" class="btn btn-secondary">Edit Module</a>
+                <a href="{{ url_for('delete_module', module_id=module.id) }}" class="btn btn-danger">Delete Module</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %} 
